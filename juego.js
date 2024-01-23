@@ -9,7 +9,7 @@ export default class Juego {
         win1, win2, win3
     ) {
         this.winsSpan = [win1, win2, win3]
-        this.ULT_LVL = 6;
+        this.ULT_LVL = document.getElementById('levels').value;
         this.level = 1;
         this.totalColors = 4;
         this.sequence = [];
