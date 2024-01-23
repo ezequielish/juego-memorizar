@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nabla&display=swap" rel="stylesheet" rel="preload">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo+Play:wght@300&display=swap" rel="stylesheet"
+        rel="preload">
+
     <title>Juego</title>
 </head>
 <style>
@@ -13,70 +20,58 @@
 
 <body>
 
-    <div class="instrucciones">
-        <h1>Piano memoria</h1>
-        <div>
-            <p>Seleccionar nivel</p>
-            <select id="nivel">
-                <option value="10">Nivel 1</option>
-                <option value="20">Nivel 2</option>
-                <option value="30">Nivel 3</option>
-            </select>
+    <div class="main-wrapper">
+        <div class="description-game">
+            <h1>Piano memoria</h1>
+            <div class="level wrapper">
+                <p class="title">Seleccionar nivel</p>
+                <select id="levels">
+                    <option value="10">Nivel 1</option>
+                    <option value="20">Nivel 2</option>
+                    <option value="30">Nivel 3</option>
+                </select>
+            </div>
+            <div class="wrapper-id">
+                <div class="instructions wrapper">
+                    <p class="title">Instrucciones:</p>
+                    <p class="">
+                        Ve pasando de nivel mientras aciertas los coleres de las teclas.
+                    </p>
+
+                    <p class="title difficulty">Dificultad</p>
+                    <ul class="instrucciones">
+                        <li>
+                            Principiante <small>10 rondas.</small>
+                        </li>
+                        <li>
+                            Intermedio <small>20 rondas.</small>
+                        </li>
+                        <li>
+                            Avazado <small>30 rondas.</small>
+                        </li>
+                    </ul>
+
+                </div>
+                <div class="wrapper">
+                    <h2>Maximas puntuaciones</h2>
+                    <ol>
+                        <li id="win-1"></li>
+                        <li id="win-2"></li>
+                        <li id="win-3"></li>
+                    </ol>
+                </div>
+            </div>
         </div>
-        <p><strong>Instrucciones:</strong></p>
-        <p>
-            Ve pasando de nivel mientras aciertas los coleres de las teclas
-        <ul>
-            <p><strong>Existen 3 niveles de dificultad</strong></p>
-            <li>
-                Principiante <small>10 rondas</small>
-            </li>
-            <li>
-                Intermedio <small>20 rondas</small>
-            </li>
-            <li>
-                Avazado <small>30 rondas</small>
-            </li>
-        </ul>
-        </p>
-
-        <h2>Maximas puntuaciones</h2>
-        <div>
-            <ol>
-                <li><strong><span id="win-1"></span></strong></li>
-                <li><strong><span id="win-2"></span></strong></li>
-                <li><strong><span id="win-3"></span></strong></li>
-
-            </ol>
+        <div class="gameboard">
+            <div id="skyBlue" class="color skyBlue left" data-color="1"></div>
+            <div id="violet" class="color violet right" data-color="2"></div>
+            <div id="orange" class="color orange left" data-color="3"></div>
+            <div id="green" class="color green right" data-color="4"></div>
+            <button id="btnEmpezar" class="btn-start">Empezar a jugar!</button>
         </div>
     </div>
-    <div class="gameboard">
-        <div id="celeste" class="color celeste left" data-color="celeste"></div>
-        <div id="violeta" class="color violeta right" data-color="violeta"></div>
-        <div id="naranja" class="color naranja left" data-color="naranja"></div>
-        <div id="verde" class="color verde right" data-color="verde"></div>
-        <button id="btnEmpezar" class="btn-start" onclick="empezarJuego()">Empezar a jugar!</button>
-    </div>
 
-    <script src="juego.js"></script>
+    <script type="module" async src="juego.js"></script>
 </body>
-<script>
-    addEventListener('load', () => {
-
-        const win1 = document.getElementById('win-1')
-        const win2 = document.getElementById('win-2')
-        const win3 = document.getElementById('win-3')
-
-
-        if (window.localStorage.getItem('nombres') != null) {
-            const jugadores = JSON.parse(window.localStorage.getItem('nombres'))
-            const altosPuntajes = jugadores.sort(function (a, b) { return b.puntos - a.puntos })
-
-            win1.innerHTML = `Nombre: ${altosPuntajes.length > 0 ? altosPuntajes[0].nombre : ""} - puntaje: ${altosPuntajes.length > 0 ? altosPuntajes[0].puntos : ""}`
-            win2.innerHTML = `Nombre: ${altosPuntajes.length > 1 ? altosPuntajes[1].nombre : ""} - puntaje: ${altosPuntajes.length > 1 ? altosPuntajes[1].puntos : ""}`
-            win3.innerHTML = `Nombre: ${altosPuntajes.length > 2 ? altosPuntajes[2].nombre : ""} - puntaje: ${altosPuntajes.length > 2 ? altosPuntajes[2].puntos : ""}`
-        }
-    })
-</script>
 
 </html>

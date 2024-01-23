@@ -1,216 +1,283 @@
-const celeste = document.getElementById('celeste')
-const violeta = document.getElementById('violeta')
-const naranja = document.getElementById('naranja')
-const verde = document.getElementById('verde')
-const btnEmpezar = document.getElementById('btnEmpezar')
 
 
-class Juego {
-    constructor() {
-        this.inicializar()
-        this.secuencia()
-        setTimeout(this.siguienteNivel, 500)
-        alert()
+import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11.10.3/+esm'
 
+export default class Juego {
+    constructor(
+        skyBlue, violet, orange, green,
+        startGameBtn,
+        win1, win2, win3
+    ) {
+        this.winsSpan = [win1, win2, win3]
+        this.ULT_LVL = 6;
+        this.level = 1;
+        this.totalColors = 4;
+        this.sequence = [];
+        this.colors = {
+            1: skyBlue,
+            2: violet,
+            3: orange,
+            4: green
+        };
+        this.player = "";
+        this.players = [];
+        this.sequencesSelected = [];
+        this.startGameBtn = startGameBtn;
+        this.addEventColors();
     }
 
-    inicializar() {
+    async init() {
+        this.setSequence([])
+        this.setLevel(1)
 
-        this.registrarJugador()
-        this.this.ULT_LVL = document.getElementById('nivel').value
-        this.colores = {
-            celeste,
-            violeta,
-            naranja,
-            verde
+        const result = await this.registerPlayer()
+        if (result != false) {
+            this.toggleBtn()
+            this.handleNextLevel()
         }
-        this.siguienteNivel = this.siguienteNivel.bind(this)
-        this.elegirColor = this.elegirColor.bind(this)
-        this.nivel = 1
-        this.jugador = null
-        this.toggleBtn()
-
     }
 
-    registrarJugador() {
+    setLevel(value) {
+        this.level = value
+    }
+    setPlayer(value) {
+        this.player = value
+    }
+    setSequence() {
+        this.sequence = new Array(this.ULT_LVL).fill(this.totalColors).map(n => Math.floor(Math.random() * n) + 1)
+    }
 
-        let nombre = prompt("Registrate - Ingresa tu nombre")
+    setSequencesSelected(payload = []) {
+        this.sequencesSelected = payload
+    }
+    setPlayers(newPlayers) {
+        window.localStorage.setItem('playersStorage', JSON.stringify(newPlayers))
+    }
 
-        const nombres = window.localStorage.getItem('nombres')
+    async registerPlayer() {
 
-        let nombreSinEspacio = (nombre != null && nombre.length > 0) && nombre.trim().toLowerCase()
+        let name = prompt("Registrate - Ingresa tu nombre")
 
+        const playersStorage = window.localStorage.getItem('playersStorage')
 
-        if (!nombre || nombreSinEspacio == "") {
-            return this.registrarJugador()
+        if (name == null) return false
 
-        }
-
-        if (!nombres) {
-            window.localStorage.setItem('nombres', JSON.stringify([{
-                nombre: nombreSinEspacio,
-                puntos: 0
-            }]))
-        }
-
-        if (nombres) {
-            let nombresViejos = JSON.parse(nombres)
+        let nameFormat = (name != null && name.length > 0) && name.trim().toLowerCase()
 
 
-            const userExist = nombresViejos.filter(jugadores => nombreSinEspacio == jugadores.nombre)
+        if (playersStorage !== null) { //storage exists
+            let players = JSON.parse(playersStorage)
+            const userExist = players.filter(player => nameFormat == player.name)
 
             if (userExist.length > 0) {
-                alert("El nombre que ingreaste ya fue usado")
-                return this.registrarJugador()
+                return await Swal.fire({
+                    title: '',
+                    text: 'El nombre que ingreaste ya fue usado, Intenta con otro.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    return false
+                })
             }
 
-            let nuevosNombres = [
-                ...nombresViejos,
-                { nombre: nombreSinEspacio, puntos: 0 }
+
+            let newPlayers = [
+                ...players,
+                { name: nameFormat, point: 0 }
             ]
-            this.jugador = nombreSinEspacio
-            window.localStorage.setItem('nombres', JSON.stringify(nuevosNombres))
 
+            this.setPlayers(newPlayers)
+            this.setPlayer(nameFormat)
+            return nameFormat
         }
 
+        let newPlayer = [
+            { name: nameFormat, point: 0 }
+        ]
+
+        this.setPlayers(newPlayer)
+        this.setPlayer(nameFormat)
+        return nameFormat
 
     }
 
-    siguienteNivel() {
-        this.subnivel = 0
-        this.iluminarSecuencia()
-        this.agregarEvento()
+    handleNextLevel() {
+        this.illuminateSequence()
     }
 
+    illuminateSequence() {
+        const sequecen = this.sequence
 
-    numeroAColor(num) {
-        switch (num) {
-            case 0: return 'celeste'
-            case 1: return 'violeta'
-            case 2: return 'naranja'
-            case 3: return 'verde'
+        if (sequecen.length > 0) {
+            for (let index = 0; index < this.level; index++) {
+
+                const levelSequence = this.sequence[index]
+                setTimeout(() => this.illuminateColor(levelSequence), 1000 * (index + 1));
+            }
         }
     }
 
-    /**
-     * 
-     * @param {strimg} color 
-     * @returns 
-     * 
-     * Retorna el índice de la represetanción del color 
-     */
-    colorANum(color) {
-        switch (color) {
-            case 'celeste': return 0
-            case 'violeta': return 1
-            case 'naranja': return 2
-            case 'verde': return 3
+
+    illuminateColor(color) {
+        this.colors[color].classList.toggle('light')
+        if (this.colors[color].classList.value.split(" ").includes("light")) {
+            setTimeout(() => this.illuminateColor(color), 250);
         }
+
     }
 
     toggleBtn() {
-        // alert(55)
-        if (btnEmpezar.classList.contains('hide')) {
-            btnEmpezar.classList.remove('hide')
-        }
-        else {
-            btnEmpezar.classList.add('hide')
-        }
-
+        this.startGameBtn.classList.toggle("hide")
     }
 
-    secuencia() {
-        this.secuencia = new Array(this.ULT_LVL).fill(0).map(n => Math.floor(Math.random() * 4))
-    }
+    selectColor(ev) {
 
-    elegirColor(ev) {
-        const nombreColor = ev.target.dataset.color // sacamos el color seleccionado
-        const numeroColor = this.colorANum(nombreColor)
-        this.iluminarColor(nombreColor)
-        if (numeroColor === this.secuencia[this.subnivel]) {
-            this.subnivel++
-            if (this.subnivel === this.nivel) {
-                this.nivel++
-                this.eliminarEvento()
-                if (this.nivel === (this.ULT_LVL + 1)) {
-                    const jugadores = [...JSON.parse(window.localStorage.getItem('nombres'))]
+        const colorSelected = parseInt(ev.target.dataset.color) // get selected color.
+        const sequencesSelected = [...this.sequencesSelected] //old selected sequence.
 
-                    jugadores[jugadores.length - 1].puntos = jugadores[jugadores.length - 1].puntos + this.ULT_LVL
+        if (this.sequencesSelected.length > 0 && this.sequencesSelected[(this.sequencesSelected.length - 1)] != this.sequence[(this.sequencesSelected.length - 1)]) {
+            return this.youLost();//we validate your selection.
+        }
 
-                    window.localStorage.setItem('nombres', JSON.stringify(jugadores))
+        sequencesSelected.push(colorSelected)//the selection is added to the selected sequence.
+        this.setSequencesSelected(sequencesSelected)
 
-                    alert("Felicidades has Ganado")
-                    this.toggleBtn()
-                }
-                else {
+        if (sequencesSelected.length != this.level) return false;
 
-                    this.apagarColor(nombreColor)
-                    alert(`Felicidades Pasaste al nivel ${this.nivel}`)
+        if (sequencesSelected.length == this.level) {//UP LEVEL
+            const validateResult = this.sequenceValidate(sequencesSelected)
 
-                    setTimeout(this.siguienteNivel, 600)
-                    // swal('Felicidades', `Pasaste al nivel ${this.nivel}`, 'success')
-                    //     .then(() => {
-                    //         setTimeout(this.siguienteNivel, 600)
-                    //     })
-
-                }
+            if (!validateResult) {
+                return this.youLost();//we validate your selection.
             }
+
+
+            if (sequencesSelected.length == (this.ULT_LVL)) { //Winner
+
+                const players = [...JSON.parse(window.localStorage.getItem('playersStorage'))]
+                const player = players.find(el => el.name == this.player)
+
+                if (!player) return alert("Error Usuario")
+
+                const idPlayer = players.findIndex(p => p.name == player.name);
+                let newPlayers = players.splice(0, idPlayer)
+
+                player.point = this.ULT_LVL;
+                newPlayers = [
+                    ...newPlayers,
+                    player
+                ]
+
+                this.setPlayers(newPlayers)
+
+                return Swal.fire({
+                    title: '',
+                    text: 'Felicidades has Ganado!!.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    this.toggleBtn()
+                    this.showRank()
+                    this.setSequencesSelected([])
+                })
+            }
+
+            this.setLevel((this.level + 1))//SET NEW LEVEL
+            const _this = this
+            return Swal.fire({
+                title: '',
+                text: `Felicidades Pasaste al nivel ${this.level}.`,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+
+                if (result.isConfirmed || result.isDismissed) {
+                    _this.setSequencesSelected([])
+                    setTimeout(_this.handleNextLevel(), 600)
+                }
+            })
+
         }
-        else {
-            this.perdiste()
+    }
+
+    addEventColors() {
+        this.colors[1].addEventListener('click', this.selectColor.bind(this))
+        this.colors[2].addEventListener('click', this.selectColor.bind(this))
+        this.colors[3].addEventListener('click', this.selectColor.bind(this))
+        this.colors[4].addEventListener('click', this.selectColor.bind(this))
+    }
+
+    removeEventColors() {
+        this.colors[1].removeEventListener('click', this.selectColor.bind(this))
+        this.colors[2].removeEventListener('click', this.selectColor.bind(this))
+        this.colors[3].removeEventListener('click', this.selectColor.bind(this))
+        this.colors[4].removeEventListener('click', this.selectColor.bind(this))
+    }
+
+    sequenceValidate(sequencesSelected) {
+
+        const sequences = [...this.sequence]
+        const sequencesLevel = sequences.splice(0, this.level)
+
+        if (JSON.stringify(sequencesLevel) === JSON.stringify(sequencesSelected)) {
+            return true
         }
+
+        return false;
     }
 
-    iluminarSecuencia() {
-        for (let i = 0; i < this.nivel; i++) {
-
-            let color = this.numeroAColor(this.secuencia[i])
-            setTimeout(() => this.iluminarColor(color), 1000 * i);
-
-        }
-    }
-
-    /**
-     * 
-     * @param {string} color 
-     * 
-     * @return Alumbra el color que debe ser seleccionado
-     */
-    iluminarColor(color) {
-        this.colores[color].classList.add('light')
-        setTimeout(() => this.apagarColor(color), 250);
-    }
-
-    apagarColor(color) {
-        this.colores[color].classList.remove('light')
-    }
-
-
-
-    agregarEvento() {
-        this.colores.celeste.addEventListener('click', this.elegirColor)
-        this.colores.verde.addEventListener('click', this.elegirColor)
-        this.colores.violeta.addEventListener('click', this.elegirColor)
-        this.colores.naranja.addEventListener('click', this.elegirColor)
-    }
-
-    eliminarEvento() {
-        this.colores.celeste.removeEventListener('click', this.elegirColor)
-        this.colores.verde.removeEventListener('click', this.elegirColor)
-        this.colores.violeta.removeEventListener('click', this.elegirColor)
-        this.colores.naranja.removeEventListener('click', this.elegirColor)
-    }
-
-    perdiste() {
-        alert(`Perdiste Vuelve a intentarlo!`)
+    youLost() {
+        this.setSequencesSelected([])
         this.toggleBtn()
-        this.inicializar.bind(this)
-        // swal('Perdiste', 'Vuelve a intentarlo!', 'error')
-        //     .then(this.inicializar.bind(this))
+        this.removeEventColors()
+
+        return Swal.fire({
+            title: '',
+            text: `Perdiste Vuelve a intentarlo!`,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        }).then((result) => {
+            // throw `Perdiste Vuelve a intentarlo!`;
+        })
     }
 
+    showRank() {
+
+        if (window.localStorage.getItem('playersStorage') != null) {
+            const players = JSON.parse(window.localStorage.getItem('playersStorage'))
+            const highScores = players.sort(function (a, b) { return b.point - a.point })
+            this.winsSpan[0].innerHTML = `<p>Nombre: ${highScores.length > 0 ? highScores[0].name : ""}</p><p>puntaje: ${highScores.length > 0 ? highScores[0].point : ""}🥇️ </p>`
+            this.winsSpan[1].innerHTML = `<p>Nombre: ${highScores.length > 1 ? highScores[1].name : ""}</p><p>puntaje: ${highScores.length > 1 ? highScores[1].point : ""}🥈️ </p>`
+            this.winsSpan[2].innerHTML = `<p>Nombre: ${highScores.length > 2 ? highScores[2].name : ""}</p><p>puntaje: ${highScores.length > 2 ? highScores[2].point : ""}🥉️ </p>`
+        }
+    }
 }
 
-function empezarJuego() {
-    new Juego()
-}
+addEventListener('load', () => {
+
+    const initBtn = document.getElementById('btnEmpezar')
+
+    const skyBlue = document.getElementById('skyBlue')
+    const violet = document.getElementById('violet')
+    const orange = document.getElementById('orange')
+    const green = document.getElementById('green')
+    const win1 = document.getElementById('win-1')
+    const win2 = document.getElementById('win-2')
+    const win3 = document.getElementById('win-3')
+    const juego = new Juego(skyBlue,
+        violet,
+        orange,
+        green,
+        initBtn,
+        win1,
+        win2,
+        win3)
+
+    initBtn.addEventListener("click", () => {
+        juego.init()
+    })
+
+
+    juego.showRank()
+
+})
